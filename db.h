@@ -92,7 +92,6 @@ typedef struct row_location_type
 	int 	col_id;
 } row_loc_type;
 
-
 /* This enum defines the different classes of tokens for 
 	 semantic processing. */
 typedef enum t_class
@@ -112,6 +111,7 @@ typedef enum t_class
    a single valid token.  Use for semantic processing. */
 typedef enum t_value
 {
+
 	T_INT = 10,		// 10 - new type should be added above this line
 	T_CHAR,		    // 11 
 	K_CREATE, 		// 12
@@ -138,9 +138,12 @@ typedef enum t_value
   K_IS,         // 33
   K_AND,        // 34
   K_OR,         // 35 - new keyword should be added below this line
-  F_SUM,        // 36
-  F_AVG,        // 37
-	F_COUNT,      // 38 - new function name should be added below this line
+  K_BACKUP,	    // 36
+  K_RESTORE,    // 37
+  K_ROLLFORWARD,// 38
+  F_SUM,        // 39
+  F_AVG,        // 40
+  F_COUNT,      // 41 - new function name should be added below this line
 	S_LEFT_PAREN = 70,  // 70
 	S_RIGHT_PAREN,		  // 71
 	S_COMMA,			      // 72
@@ -164,7 +167,7 @@ char *keyword_table[] =
 {
   "int", "char", "create", "table", "not", "null", "drop", "list", "schema",
   "for", "to", "insert", "into", "values", "delete", "from", "where", 
-  "update", "set", "select", "order", "by", "desc", "is", "and", "or",
+  "update", "set", "select", "order", "by", "desc", "is", "and", "or", "backup", "restore", "rollforward",
   "sum", "avg", "count"
 };
 
@@ -179,7 +182,10 @@ typedef enum s_statement
   INSERT,                   // 104
   DELETE,                   // 105
   UPDATE,                   // 106
-  SELECT                    // 107
+  SELECT,                    // 107
+  BACKUP,					// 108
+  RESTORE, 					// 109
+  ROLLFORWARD				// 110
 } semantic_statement;
 
 /* This enum has a list of all the errors that should be detected
@@ -222,21 +228,25 @@ typedef enum error_return_codes
 	MUST_COMPARE_WITH_INT_OR_STRING_OR_NULL ,//-183
 	//Update errors
 	MISSING_KEYWORD_SET = -179,
-	MISSING_EQUALS_AFTER_SET, 
+	MISSING_EQUALS_AFTER_SET, //-178
 	// select errrors
-	MISSING_WHERE_OR_AND_OR_OR,
-	MISSING_FROM_AFTER_STAR,
-	INVALID_SELECT_STATEMENT,
-	MISSING_KEYWORD_FROM,
-	MISSING_RIGHT_PAREN,
-	CANNOT_AGGREGATE_STRINGS
+	MISSING_WHERE_OR_AND_OR_OR, //-177
+	MISSING_FROM_AFTER_STAR, //-176
+	INVALID_SELECT_STATEMENT, //-175
+	MISSING_KEYWORD_FROM,  //-174
+	MISSING_RIGHT_PAREN, //-173
+	CANNOT_AGGREGATE_STRINGS, //-172
+	//Backup errors
+	INVALID_BACKUP_FILENAME = -169,
+	EXTRA_TEXT_AFTER_FILENAME, 	//-168
+	FILE_ALREADY_EXISTS 		//-167
 
 } return_codes;
 
 /* Set of function prototypes */
 int get_token(char *command, token_list **tok_list);
 void add_to_list(token_list **tok_list, char *tmp, int t_class, int t_value);
-int do_semantic(token_list *tok_list);
+int do_semantic(token_list *tok_list, char* command);
 int sem_create_table(token_list *t_list);
 int sem_drop_table(token_list *t_list);
 int sem_list_tables();
@@ -246,6 +256,10 @@ int sem_select_data(token_list *t_list);
 int sem_delete_data(token_list *t_list);
 int sem_select_all_data(token_list *t_list);
 int sem_update_data(token_list *t_list);
+int sem_backup_data(token_list *t_list);
+char *getLogFile(char* file_name);
+int logCommand(char *filename);
+table_file_header* getDataTable(char *file_name);
 
 
 /*
